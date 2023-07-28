@@ -1,2 +1,1 @@
-# GestureExponentialTool
- 
+# Serial Plotter
