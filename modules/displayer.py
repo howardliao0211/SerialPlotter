@@ -7,15 +7,20 @@ from modules.event import EventType, subscribe
 from modules.theme import Theme
 from UI.mplwidget import MplWidget
 from PyQt5.QtWidgets import QTextBrowser, QScrollBar
-
+from enum import Enum, auto
 import matplotlib.pyplot as plt
 
+class PlotType(Enum):
+    STEM = auto()
+    PLOT = auto()
 @dataclass
 class MplConfig:
     x_min: float = 0
     x_max: float = 0
     y_min: float = 0
     y_max: float = 0
+
+    sample_num: int = 100
 
     title: str = ''
     xlabel: str = ''
@@ -24,33 +29,13 @@ class MplConfig:
     is_auto_enable: bool = True
     is_grid_enable: bool = False
 
-    def auto_enabled(self, enable: bool) -> None:
-        self.is_auto_enable = enable
-    
-    def grid_enabled(self, enable: bool) -> None:
-        self.is_grid_enable = enable
-    
-    def is_axis_lim_valid(self) -> bool:
-        if self.x_max <= self.x_min:
-            return False
+    plot_type: PlotType = PlotType.STEM
 
-        if self.y_max <= self.y_min:
-            return False
-
-        return True
-
-    def set_x_lim(self, min: float, max: float) -> None:
-        self.x_min = min
-        self.x_max = max
+    def is_x_axis_lim_valid(self) -> bool:
+        return self.x_max > self.x_min
     
-    def set_y_lim(self, min: float, max: float) -> None:
-        self.y_min = min
-        self.y_max = max
-    
-    def set_labels(self, title: str, x_label: str, y_label: str) -> None:
-        self.title = title
-        self.xlabel = x_label
-        self.ylabel = y_label
+    def is_y_axis_lim_valid(self) -> bool:
+        return self.y_max > self.y_min
 
     def get_x_lim(self) -> List[float]:
         return [self.x_min, self.x_max]
@@ -76,9 +61,10 @@ class MplDisplayer:
     ''' An displayer class to display data and message through canvas. '''
     mpl_widget: MplWidget
     mpl_config: MplConfig = field(default_factory=MplConfig)
+    sample_dict: dict = field(default_factory=dict)
 
-    def update_mpl_config(self) -> None:
-        pass
+    def update_mpl_config(self, mpl_config: MplConfig) -> None:
+        self.mpl_config = mpl_config
 
     def setup_event_handler(self) -> None:
         subscribe(EventType.NEW_FLOAT_EVENT, self.display_float)
@@ -87,7 +73,6 @@ class MplDisplayer:
         pass
 
     def display_float(self, datas: List[float]) -> None:
-        x = range(len(datas))
         self.mpl_widget.canvas.axes.cla()
         
         if self.mpl_config.title != '':
@@ -99,15 +84,39 @@ class MplDisplayer:
         if self.mpl_config.ylabel != '':
             self.mpl_widget.canvas.axes.set_ylabel(self.ylabel)
         
-        if not self.mpl_config.is_auto_enable and self.mpl_config.is_axis_lim_valid():
-            self.mpl_widget.canvas.axes.set_xlim(self.mpl_config.get_x_lim())
-            self.mpl_widget.canvas.axes.set_ylim(self.mpl_config.get_y_lim())
+        if not self.mpl_config.is_auto_enable:
+            if self.mpl_config.plot_type is not PlotType.PLOT and self.mpl_config.is_x_axis_lim_valid():
+                self.mpl_widget.canvas.axes.set_xlim(self.mpl_config.get_x_lim())
+
+            if self.mpl_config.is_y_axis_lim_valid():
+                self.mpl_widget.canvas.axes.set_ylim(self.mpl_config.get_y_lim())
 
         if self.mpl_config.is_grid_enable:
             self.mpl_widget.canvas.axes.grid()
         
-        self.mpl_widget.canvas.axes.stem(x, datas)
+        self.plot(datas)
         self.mpl_widget.canvas.axes.get_figure().canvas.draw()
+    
+    def plot(self, datas: List[float]) -> None:
+
+        if self.mpl_config.plot_type == PlotType.STEM:
+            self.mpl_widget.canvas.axes.stem(range(len(datas)), datas)
+
+        elif self.mpl_config.plot_type == PlotType.PLOT:
+            for index, data in enumerate(datas):
+                if not index in self.sample_dict:
+                    self.sample_dict[index] = []
+                self.sample_dict[index].append(data)
+
+            start_point = 0
+            end_point = len(self.sample_dict[index])
+
+            for index in self.sample_dict:
+                if len(self.sample_dict[index]) > self.mpl_config.sample_num:
+                    start_point = len(self.sample_dict[index]) - self.mpl_config.sample_num
+
+                self.mpl_widget.canvas.axes.plot(range(start_point, end_point), self.sample_dict[index][start_point:end_point])
+
 
 @dataclass
 class TextBrowserDisplayer:

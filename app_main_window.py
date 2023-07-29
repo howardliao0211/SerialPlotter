@@ -3,7 +3,7 @@ from modules.application import Application
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QObject, QTimer, QEvent
-from modules.displayer import TextBrowserDisplayer, MplDisplayer
+from modules.displayer import TextBrowserDisplayer, MplDisplayer, MplConfig, PlotType
 from modules.theme import Theme
 
 import serial.tools.list_ports as list_ports
@@ -11,6 +11,10 @@ import qdarktheme
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+plot_type_dict = {
+    'Stem': PlotType.STEM,
+    'Plot': PlotType.PLOT,
+}
 class App_MainWindow(QtWidgets.QMainWindow):
     """Application GUI"""
 
@@ -44,7 +48,6 @@ class App_MainWindow(QtWidgets.QMainWindow):
             lambda: self.connect_button_action(
                 self.ui.com_port_combo_box.currentText(),
                 self.ui.baud_rate_combo_box.currentText(),
-                self.ui.time_out_line_edit.text(),
             )
         )
         self.ui.end_button.clicked.connect(
@@ -72,6 +75,14 @@ class App_MainWindow(QtWidgets.QMainWindow):
                 self.ui.delimiter_line_edit.text(),
             )
         )
+        self.ui.x_max_double_spin_box.textChanged.connect(self.graph_config_action)
+        self.ui.x_min_double_spin_box.textChanged.connect(self.graph_config_action)
+        self.ui.y_min_double_spin_box.textChanged.connect(self.graph_config_action)
+        self.ui.y_max_double_spin_box.textChanged.connect(self.graph_config_action)
+        self.ui.grid_combo_box.currentTextChanged.connect(self.graph_config_action)
+        self.ui.auto_combo_box.currentTextChanged.connect(self.graph_config_action)
+        self.ui.plot_type_combo_box.currentIndexChanged.connect(self.graph_config_action)
+        self.ui.sample_spin_box.textChanged.connect(self.graph_config_action)
         self.ui.textBrowser.installEventFilter(self)
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
@@ -80,6 +91,33 @@ class App_MainWindow(QtWidgets.QMainWindow):
                 self.app.text_displayer.auto_scroll_enabled(False)
 
         return super().eventFilter(source, event)
+    
+    def graph_config_action(self) -> None:
+        current_plot_type = PlotType
+        current_plot_type = plot_type_dict[self.ui.plot_type_combo_box.currentText()]
+
+        self.app.canvas_displayer.update_mpl_config(
+            MplConfig(
+                x_min=float(self.ui.x_min_double_spin_box.text()),
+                x_max=float(self.ui.x_max_double_spin_box.text()),
+                y_min=float(self.ui.y_min_double_spin_box.text()),
+                y_max=float(self.ui.y_max_double_spin_box.text()),
+                is_auto_enable=True if self.ui.auto_combo_box.currentText() == 'Enable' else False,
+                is_grid_enable=True if self.ui.grid_combo_box.currentText() == 'Enable' else False,
+                sample_num=int(self.ui.sample_spin_box.text()),
+                plot_type=current_plot_type
+            )
+        )
+
+        if current_plot_type == PlotType.PLOT:
+            self.ui.x_min_double_spin_box.setEnabled(False)
+            self.ui.x_max_double_spin_box.setEnabled(False)
+            self.ui.sample_spin_box.setEnabled(True)
+
+        elif current_plot_type == PlotType.STEM:
+            self.ui.x_min_double_spin_box.setEnabled(True)
+            self.ui.x_max_double_spin_box.setEnabled(True)
+            self.ui.sample_spin_box.setEnabled(False)
 
     def refresh_button_action(self) -> None:
         self.ui.com_port_combo_box.clear()
@@ -88,7 +126,7 @@ class App_MainWindow(QtWidgets.QMainWindow):
         )
 
     def connect_button_action(
-        self, port_info: str, baudrate: str, timeout: str
+        self, port_info: str, baudrate: str
     ) -> None:
         connected = bool()
 
@@ -96,7 +134,7 @@ class App_MainWindow(QtWidgets.QMainWindow):
             for port in list_ports.comports():
                 if str(port) == port_info:
                     connected = self.app.connect(
-                        port.name, int(baudrate), float(timeout)
+                        port.name, int(baudrate)
                     )
             if connected is not True:
                 msg = QMessageBox(self)
