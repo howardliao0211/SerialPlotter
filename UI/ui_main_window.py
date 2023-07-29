@@ -164,6 +164,12 @@ class Ui_MainWindow(object):
         self.end_button.setObjectName("end_button")
         self.verticalLayout_2.addWidget(self.end_button)
         self.textBrowser = QtWidgets.QTextBrowser(self.console_tab)
+        font = QtGui.QFont()
+        font.setFamily("Bahnschrift")
+        font.setPointSize(12)
+        font.setBold(False)
+        font.setWeight(50)
+        self.textBrowser.setFont(font)
         self.textBrowser.setAutoFillBackground(False)
         self.textBrowser.setObjectName("textBrowser")
         self.verticalLayout_2.addWidget(self.textBrowser)
@@ -184,7 +190,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.baud_rate_combo_box.setCurrentIndex(11)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

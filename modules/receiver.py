@@ -57,6 +57,6 @@ class SimulationReceiver:
 
     def receive_message(self) -> str:
         msg = str()
-        random_floats = [random.random() for _ in range(20)]
+        random_floats = [random.random() for _ in range(3)]
         msg = '$$$' + ','.join(str(num).format() for num in random_floats) + '###' + '\n'
         return msg

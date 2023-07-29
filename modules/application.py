@@ -12,7 +12,7 @@ class Application:
     text_displayer: TextBrowserDisplayer
     canvas_displayer: MplDisplayer
     console_displayer: ConsoleDisplayer = field(default_factory=ConsoleDisplayer)
-    receiver: Receiver = field(default_factory=SerialReceiver)
+    receiver: Receiver = field(default_factory=SimulationReceiver)
     parser: StringParser = field(init=False, default_factory=StringParser)
 
     def __post_init__(self) -> None:

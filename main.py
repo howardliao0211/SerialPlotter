@@ -5,7 +5,7 @@ import qdarktheme
 import matplotlib.pyplot as plt
 from modules.theme import Theme
 
-theme = Theme.DARK
+theme = Theme.LIGHT
 theme_setup = {
     Theme.LIGHT: lambda: qdarktheme.setup_theme('light'),
     Theme.DARK: lambda: (qdarktheme.setup_theme('dark'), plt.style.use('dark_background'))

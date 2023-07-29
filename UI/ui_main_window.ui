@@ -191,7 +191,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="usesScrollButtons">
        <bool>false</bool>
@@ -326,6 +326,14 @@
         </item>
         <item>
          <widget class="QTextBrowser" name="textBrowser">
+          <property name="font">
+           <font>
+            <family>Bahnschrift</family>
+            <pointsize>12</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
