@@ -19,7 +19,7 @@ class StringParser:
     def parse_string(self, msg: str) -> str:
         if self.start_string in msg and self.end_string in msg:
             msg = msg[msg.index(self.start_string) + len(self.start_string) : msg.index(self.end_string)]
-            return msg
+            return msg.strip()
         return ''
 
     def parse_float(self, msg: str) -> None:
