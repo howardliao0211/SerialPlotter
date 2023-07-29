@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from modules.event import EventType, subscribe
+from modules.theme import Theme
+from UI.mplwidget import MplWidget
 from PyQt5.QtWidgets import QTextBrowser, QScrollBar
 
 import matplotlib.pyplot as plt
@@ -28,44 +30,40 @@ class ConsoleDisplayer(Displayer):
     ''' An displayer class to display data and message through console. '''
 
     def setup_event_handler(self) -> None:
-        subscribe(EventType.NEW_MESSAGE_EVENT, self.display_message)
+        subscribe(EventType.NEW_FLOAT_EVENT, self.display_float)
 
     def display_message(self, message: str) -> None:
         print(message, end='')
 
     def display_float(self, datas: List[float]) -> None:
-        for data in datas:
-            print(str(data))
+        print(', '.join([str(num) for num in datas]))
 
 @dataclass
-class CanvasDisplayer(Displayer):
+class MplDisplayer(Displayer):
     ''' An displayer class to display data and message through canvas. '''
-    canvas: plt.Axes
+    mpl_widget: MplWidget
     title: str = field(default='')
     xlabel: str = field(default='')
     ylabel: str = field(default='')
 
     def setup_event_handler(self) -> None:
-        subscribe(EventType.NEW_MESSAGE_EVENT, self.display_message)
         subscribe(EventType.NEW_FLOAT_EVENT, self.display_float)
-
+    
     def display_message(self, message: str) -> None:
-        print(message)
+        pass
 
     def display_float(self, datas: List[float]) -> None:
         x = range(len(datas))
-        self.canvas.axes.clear()
+        self.mpl_widget.canvas.axes.cla()
         if self.title != '':
-            self.canvas.axes.set_title(self.title)
+            self.mpl_widget.canvas.axes.set_title(self.title)
         if self.xlabel != '':
-            self.canvas.axes.set_xlabel(self.xlabel)
+            self.mpl_widget.canvas.axes.set_xlabel(self.xlabel)
         if self.ylabel != '':
-            self.canvas.axes.set_ylabel(self.ylabel)
-        self.canvas.axes.stem(x, datas)
-        self.canvas.axes.grid()
-        # self.canvas.axes.get_figure().canvas.draw()
-        plt.draw()
-        plt.pause(0.01)
+            self.mpl_widget.canvas.axes.set_ylabel(self.ylabel)
+        self.mpl_widget.canvas.axes.stem(x, datas)
+        self.mpl_widget.canvas.axes.grid()
+        self.mpl_widget.canvas.axes.get_figure().canvas.draw()
 
 @dataclass
 class TextBrowserDisplayer(Displayer):
