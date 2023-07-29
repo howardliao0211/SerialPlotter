@@ -22,6 +22,8 @@ class App_MainWindow(QtWidgets.QMainWindow):
 
         """ Set up class instances """
         self.timer = QTimer()
+        self.timeout_ms = 20
+
         self.app = Application(
             TextBrowserDisplayer(self.ui.textBrowser),
             MplDisplayer(self.ui.graph_mpl_widget),
@@ -109,7 +111,7 @@ class App_MainWindow(QtWidgets.QMainWindow):
         if connected is True:
             self.ui.connect_button.setText("Disconnect !")
             self.ui.statusbar.showMessage("Connection Successful!")
-            self.timer.start(1)
+            self.timer.start(self.timeout_ms)
         else:
             self.ui.connect_button.setText("Connect !")
             self.ui.statusbar.clearMessage()

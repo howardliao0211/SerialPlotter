@@ -215,7 +215,7 @@ class Ui_MainWindow(object):
         self.end_string_label.setText(_translate("MainWindow", "End String: "))
         self.start_string_line_edit.setText(_translate("MainWindow", "$$$"))
         self.end_string_line_edit.setText(_translate("MainWindow", "###"))
-        self.delimiter_label.setText(_translate("MainWindow", "TextLabel"))
+        self.delimiter_label.setText(_translate("MainWindow", "Delimiter: "))
         self.delimiter_line_edit.setText(_translate("MainWindow", ","))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.graph_tab), _translate("MainWindow", "Graph"))
         self.save_button.setText(_translate("MainWindow", "Save"))
