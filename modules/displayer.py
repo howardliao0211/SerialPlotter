@@ -31,16 +31,10 @@ class MplConfig:
 
     plot_type: PlotType = PlotType.STEM
 
-    def is_x_axis_lim_valid(self) -> bool:
-        return self.x_max > self.x_min
-    
-    def is_y_axis_lim_valid(self) -> bool:
-        return self.y_max > self.y_min
-
-    def get_x_lim(self) -> List[float]:
+    def get_xlim(self) -> List[float]:
         return [self.x_min, self.x_max]
 
-    def get_y_lim(self) -> List[float]:
+    def get_ylim(self) -> List[float]:
         return [self.y_min, self.y_max]
 
 @dataclass
@@ -85,11 +79,9 @@ class MplDisplayer:
             self.mpl_widget.canvas.axes.set_ylabel(self.ylabel)
         
         if not self.mpl_config.is_auto_enable:
-            if self.mpl_config.plot_type is not PlotType.PLOT and self.mpl_config.is_x_axis_lim_valid():
-                self.mpl_widget.canvas.axes.set_xlim(self.mpl_config.get_x_lim())
-
-            if self.mpl_config.is_y_axis_lim_valid():
-                self.mpl_widget.canvas.axes.set_ylim(self.mpl_config.get_y_lim())
+            if self.mpl_config.plot_type is not PlotType.PLOT:
+                self.mpl_widget.canvas.axes.set_xlim(self.mpl_config.get_xlim())
+            self.mpl_widget.canvas.axes.set_ylim(self.mpl_config.get_ylim())
 
         if self.mpl_config.is_grid_enable:
             self.mpl_widget.canvas.axes.grid()
