@@ -567,7 +567,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextBrowser" name="textBrowser">
+         <widget class="QTextBrowser" name="console_text_browser">
           <property name="font">
            <font>
             <family>Bahnschrift</family>

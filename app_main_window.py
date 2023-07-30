@@ -3,13 +3,12 @@ from modules.application import Application
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QObject, QTimer, QEvent
+from datetime import datetime
 from modules.displayer import TextBrowserDisplayer, MplDisplayer, MplConfig, PlotType
-from modules.theme import Theme
+from modules.save import save_log
 
 import serial.tools.list_ports as list_ports
-import qdarktheme
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+import os
 
 plot_type_dict = {
     'Stem': PlotType.STEM,
@@ -19,7 +18,6 @@ class App_MainWindow(QtWidgets.QMainWindow):
     """Application GUI"""
 
     def __init__(self, parent: QtWidgets.QMainWindow = None):
-        """UI Initialization"""
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -27,9 +25,11 @@ class App_MainWindow(QtWidgets.QMainWindow):
         """ Set up class instances """
         self.timer = QTimer()
         self.timeout_ms = 20
+        self.log_dir = 'logs'
+        self.filename = 'saved_log'
 
         self.app = Application(
-            TextBrowserDisplayer(self.ui.textBrowser),
+            TextBrowserDisplayer(self.ui.console_text_browser),
             MplDisplayer(self.ui.graph_mpl_widget),
         )
         self.app.parser.set_config(
@@ -43,6 +43,7 @@ class App_MainWindow(QtWidgets.QMainWindow):
         self.ui.com_port_combo_box.addItems(
             [str(port) for port in list_ports.comports()]
         )
+        self.ui.save_button.clicked.connect(self.save_button_action)
         self.ui.refresh_button.clicked.connect(self.refresh_button_action)
         self.ui.connect_button.clicked.connect(
             lambda: self.connect_button_action(
@@ -53,7 +54,7 @@ class App_MainWindow(QtWidgets.QMainWindow):
         self.ui.end_button.clicked.connect(
             lambda: self.app.text_displayer.auto_scroll_enabled(True)
         )
-        self.ui.clear_button.clicked.connect(lambda: self.ui.textBrowser.clear())
+        self.ui.clear_button.clicked.connect(lambda: self.ui.console_text_browser.clear())
         self.ui.start_string_line_edit.textChanged.connect(
             lambda: self.app.parser.set_config(
                 self.ui.start_string_line_edit.text(),
@@ -83,14 +84,19 @@ class App_MainWindow(QtWidgets.QMainWindow):
         self.ui.auto_combo_box.currentTextChanged.connect(self.graph_config_action)
         self.ui.plot_type_combo_box.currentIndexChanged.connect(self.graph_config_action)
         self.ui.sample_spin_box.textChanged.connect(self.graph_config_action)
-        self.ui.textBrowser.installEventFilter(self)
+        self.ui.console_text_browser.installEventFilter(self)
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
-        if source == self.ui.textBrowser:
+        if source == self.ui.console_text_browser:
             if event.type() == QEvent.Wheel:
                 self.app.text_displayer.auto_scroll_enabled(False)
 
         return super().eventFilter(source, event)
+    
+    def save_button_action(self) -> None:
+        filename = self.filename + datetime.now().strftime('_%Y%m%d_%H%M%S') + '.txt'
+        save_log(self.ui.console_text_browser.toPlainText(), self.log_dir, filename)
+        self.ui.statusbar.showMessage(f'Console log has been saved to {os.path.join(self.log_dir, filename)}')
     
     def graph_config_action(self) -> None:
         current_plot_type = PlotType

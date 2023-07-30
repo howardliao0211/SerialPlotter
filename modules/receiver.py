@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Protocol
 import serial
+import numpy as np
 
 class Receiver(Protocol):
     ''' A protocol to define how receiver should communicate with other object'''
@@ -48,7 +49,9 @@ class SerialReceiver:
 import random
 @dataclass
 class SimulationReceiver:
-    
+
+    counter: float = 0.0
+
     def connect(self, *args) -> bool:
         return True
     
@@ -57,6 +60,14 @@ class SimulationReceiver:
 
     def receive_message(self) -> str:
         msg = str()
-        random_floats = [random.random() for _ in range(3)]
-        msg = '$$$' + ','.join(str(num).format() for num in random_floats) + '###' + '\n'
+        simulate_data = list()
+        # simulate_data = [random.random() for _ in range(20)]
+        simulate_data.append(np.sin(self.counter))
+        simulate_data.append(np.cos(self.counter))
+        simulate_data.append(np.sin(self.counter) + (np.pi / 2))
+        simulate_data.append(np.cos(self.counter) + (np.pi / 2))
+        simulate_data.append(np.sin(self.counter) + (np.pi))
+        simulate_data.append(np.cos(self.counter) + (np.pi))
+        self.counter += 0.1
+        msg = '$$$' + ','.join(str(num).format() for num in simulate_data) + '###' + '\n'
         return msg
